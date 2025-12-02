@@ -30,9 +30,12 @@ app.use("/peerjs", peerServer);
 
 const io = new Server(server, {
     cors: {
-        origin: "*", // Allow all origins for simplicity in this setup, or restrict to process.env.FRONT_URL
-        methods: ["GET", "POST"],
+        origin: "*",
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allowedHeaders: ["my-custom-header"],
+        credentials: true
     },
+    transports: ['websocket', 'polling'] // Explicitly allow both
 });
 
 
