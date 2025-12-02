@@ -5,7 +5,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { roomHandler } from "./room/room";
 
-import { PeerServer } from "peer";
+import { ExpressPeerServer } from "peer";
 
 dotenv.config();
 
@@ -20,10 +20,17 @@ app.get("/health", (_, res) => {
 
 const server = http.createServer(app);
 
+// Integrate PeerJS Server with the main HTTP server
+const peerServer = ExpressPeerServer(server, {
+    path: "/peerjs",
+    allow_discovery: true
+});
+
+app.use("/peerjs", peerServer);
 
 const io = new Server(server, {
     cors: {
-        origin: process.env.FRONT_URL,
+        origin: "*", // Allow all origins for simplicity in this setup, or restrict to process.env.FRONT_URL
         methods: ["GET", "POST"],
     },
 });
@@ -31,17 +38,11 @@ const io = new Server(server, {
 
 io.on("connection", (socket) => {
     console.log("a user connected");
-    roomHandler(socket); 
+    roomHandler(socket);
     socket.on("disconnect", () => console.log("user disconnected"));
 });
 
-// PeerJS server on separate port for WebRTC signaling
-const peerServer = PeerServer({
-    port: 9000,
-    path: "/peerjs",
-    allow_discovery: true
-});
-
+// PeerJS events
 peerServer.on('connection', (client) => {
     console.log(`PeerJS: Client connected with ID ${client.getId()}`);
 });
@@ -54,5 +55,5 @@ peerServer.on('disconnect', (client) => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
-    console.log(`PeerJS server running on port 9000`);
+    console.log(`PeerJS server running on path /peerjs`);
 });
