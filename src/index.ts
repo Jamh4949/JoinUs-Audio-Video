@@ -35,15 +35,24 @@ io.on("connection", (socket) => {
     socket.on("disconnect", () => console.log("user disconnected"));
 });
 
-PeerServer({
-    port: 0,
-    path: "/peerjs"
-}, () => {
-    console.log("PeerJS server is running...");
+// PeerJS server on separate port for WebRTC signaling
+const peerServer = PeerServer({
+    port: 9000,
+    path: "/peerjs",
+    allow_discovery: true
+});
+
+peerServer.on('connection', (client) => {
+    console.log(`PeerJS: Client connected with ID ${client.getId()}`);
+});
+
+peerServer.on('disconnect', (client) => {
+    console.log(`PeerJS: Client disconnected with ID ${client.getId()}`);
 });
 
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
+    console.log(`PeerJS server running on port 9000`);
 });
