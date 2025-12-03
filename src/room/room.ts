@@ -8,8 +8,15 @@ import {
 } from "./interface";
 import crypto from "crypto";
 
+/**
+ * Handles socket events for room management.
+ * @param {Socket} socket - The socket instance.
+ */
 export const roomHandler = (socket: Socket) => {
 
+    /**
+     * Creates a new room with a unique ID.
+     */
     const createRoom = () => {
         const roomId = crypto.randomUUID();
         rooms[roomId] = {};
@@ -17,6 +24,10 @@ export const roomHandler = (socket: Socket) => {
         console.log("user created the room");
     };
 
+    /**
+     * Joins a user to an existing room.
+     * @param {IJoinRoomParams} params - Parameters for joining a room.
+     */
     const joinRoom = ({ roomId, peerId, userName }: IJoinRoomParams) => {
         if (!rooms[roomId]) rooms[roomId] = {};
         if (!chats[roomId]) chats[roomId] = [];
@@ -40,6 +51,10 @@ export const roomHandler = (socket: Socket) => {
         });
     };
 
+    /**
+     * Removes a user from a room.
+     * @param {IRoomParams} params - Parameters for leaving a room.
+     */
     const leaveRoom = ({ peerId, roomId }: IRoomParams) => {
         if (rooms[roomId] && rooms[roomId][peerId]) {
             delete rooms[roomId][peerId];
@@ -54,20 +69,38 @@ export const roomHandler = (socket: Socket) => {
         socket.leave(roomId);
     };
 
+    /**
+     * Notifies other users that a participant started sharing their screen.
+     * @param {IRoomParams} params - Room parameters.
+     */
     const startSharing = ({ peerId, roomId }: IRoomParams) => {
         socket.to(roomId).emit("user-started-sharing", peerId);
     };
 
+    /**
+     * Notifies other users that a participant stopped sharing their screen.
+     * @param {IRoomParams} params - Room parameters.
+     */
     const stopSharing = ({ peerId, roomId }: IRoomParams) => {
         socket.to(roomId).emit("user-stopped-sharing", peerId);
     };
 
+    /**
+     * Adds a message to the room's chat.
+     * @param {Object} params - Message parameters.
+     * @param {string} params.roomId - The room ID.
+     * @param {IMessage} params.message - The message object.
+     */
     const addMessage = ({ roomId, message }: { roomId: string; message: IMessage }) => {
         if (!chats[roomId]) chats[roomId] = [];
         chats[roomId].push(message);
         socket.to(roomId).emit("add-message", message);
     };
 
+    /**
+     * Changes a user's display name in the room.
+     * @param {IRoomParams & { userName: string }} params - Parameters including new username.
+     */
     const changeName = ({ peerId, userName, roomId }: IRoomParams & { userName: string }) => {
         if (rooms[roomId] && rooms[roomId][peerId]) {
             rooms[roomId][peerId].userName = userName;

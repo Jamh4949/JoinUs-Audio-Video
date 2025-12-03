@@ -14,6 +14,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+/**
+ * Health check endpoint.
+ * @name get/health
+ * @function
+ */
 app.get("/health", (_, res) => {
     res.send("Server is running");
 });
@@ -26,6 +31,9 @@ const peerServer = ExpressPeerServer(server, {
     allow_discovery: true
 });
 
+/**
+ * PeerJS server endpoint.
+ */
 app.use("/peerjs", peerServer);
 
 const io = new Server(server, {
@@ -39,6 +47,9 @@ const io = new Server(server, {
 });
 
 
+/**
+ * Socket.IO connection handler.
+ */
 io.on("connection", (socket) => {
     console.log("a user connected");
     roomHandler(socket);
