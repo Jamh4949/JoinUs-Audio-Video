@@ -19,6 +19,8 @@ export interface IUser {
     peerId: string;
     /** User's display name */
     userName: string;
+    /** Whether the user has video enabled */
+    isVideoEnabled: boolean;
 }
 
 /**
@@ -40,6 +42,8 @@ export interface IRoomParams {
 export interface IJoinRoomParams extends IRoomParams {
     /** User's display name */
     userName: string;
+    /** Whether the user has video enabled */
+    isVideoEnabled: boolean;
 }
 
 /**

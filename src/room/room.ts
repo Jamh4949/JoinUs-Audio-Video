@@ -28,17 +28,17 @@ export const roomHandler = (socket: Socket) => {
      * Joins a user to an existing room.
      * @param {IJoinRoomParams} params - Parameters for joining a room.
      */
-    const joinRoom = ({ roomId, peerId, userName }: IJoinRoomParams) => {
+    const joinRoom = ({ roomId, peerId, userName, isVideoEnabled }: IJoinRoomParams) => {
         if (!rooms[roomId]) rooms[roomId] = {};
         if (!chats[roomId]) chats[roomId] = [];
 
         socket.emit("get-messages", chats[roomId]);
         console.log("user joined the room", roomId, peerId, userName);
 
-        rooms[roomId][peerId] = { peerId, userName };
+        rooms[roomId][peerId] = { peerId, userName, isVideoEnabled };
         socket.join(roomId);
 
-        socket.to(roomId).emit("user-joined", { peerId, userName });
+        socket.to(roomId).emit("user-joined", { peerId, userName, isVideoEnabled });
 
         socket.emit("get-users", {
             roomId,
@@ -86,6 +86,17 @@ export const roomHandler = (socket: Socket) => {
     };
 
     /**
+     * Notifies other users that a participant toggled their video.
+     * @param {Object} params - Toggle parameters
+     */
+    const toggleVideo = ({ peerId, roomId, isVideoOff }: { peerId: string; roomId: string; isVideoOff: boolean }) => {
+        if (rooms[roomId] && rooms[roomId][peerId]) {
+            rooms[roomId][peerId].isVideoEnabled = !isVideoOff;
+        }
+        socket.to(roomId).emit("user-toggled-video", { peerId, isVideoOff });
+    };
+
+    /**
      * Adds a message to the room's chat.
      * @param {Object} params - Message parameters.
      * @param {string} params.roomId - The room ID.
@@ -114,5 +125,6 @@ export const roomHandler = (socket: Socket) => {
     socket.on("start-sharing", startSharing);
     socket.on("stop-sharing", stopSharing);
     socket.on("send-message", addMessage);
+    socket.on("toggle-video", toggleVideo);
     socket.on("change-name", changeName);
 };
