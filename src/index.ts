@@ -28,7 +28,8 @@ const server = http.createServer(app);
 // Integrate PeerJS Server with the main HTTP server
 const peerServer = ExpressPeerServer(server, {
     path: "/",
-    allow_discovery: true
+    allow_discovery: true,
+    proxied: true
 });
 
 /**
